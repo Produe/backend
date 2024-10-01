@@ -7,9 +7,7 @@ import datetime
 from dotenv import load_dotenv
 import os
 import re
-from flask_cors import CORS
 app = Flask(__name__)
-CORS(app)
 load_dotenv("TOKENS.env")
 valRegEx = r'^[a-zA-Z0-9_-]+$'
 

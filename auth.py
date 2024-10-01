@@ -13,7 +13,7 @@ CORS(app)
 load_dotenv("TOKENS.env")
 valRegEx = r'^[a-zA-Z0-9_-]+$'
 
-cred = credentials.Certificate("C:/Users/Aram Jnad/Desktop/internship/Bu1ldbot/produ-5d1cb-firebase-adminsdk-8hzdo-f44bea1278.json")
+cred = credentials.Certificate("produ-5d1cb-firebase-adminsdk-8hzdo-f44bea1278.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 

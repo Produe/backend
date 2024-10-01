@@ -1,22 +1,22 @@
 # Flask framework and WSGI server
-Flask=3.0.3
-gunicorn=23.0.0
+Flask==3.0.3
+gunicorn==23.0.0
 
 # Firebase Admin SDK for Firestore
-firebase-admin=6.5.0
+firebase-admin==6.5.0
 
 # Google Cloud Firestore
-google-cloud-firestore=2.19.0
+google-cloud-firestore==2.19.0
 
 # Requests library for API calls
-requests=2.32.3
+requests==2.32.3
 
 # Slack Bolt for Slack bot
-slack-bolt=1.20.1
-slack-sdk=3.33.1
+slack-bolt==1.20.1
+slack-sdk==3.33.1
 
 # dotenv for loading environment variables
-python-dotenv=1.0.1
+python-dotenv==1.0.1
 
 # Regex for validations
-regex=2024.9.11
+regex==2024.9.11

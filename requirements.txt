@@ -48,6 +48,7 @@ python-dotenv==1.0.1
 python-jwt==4.1.0
 pytzdata==2020.1
 requests==2.32.3
+setuptools
 requests-toolbelt==0.10.1
 rsa==4.9
 six==1.16.0

@@ -7,14 +7,15 @@ import datetime
 from dotenv import load_dotenv
 import os
 import re
-
+from flask_cors import CORS
 app = Flask(__name__)
+CORS(app)
 load_dotenv("TOKENS.env")
 valRegEx = r'^[a-zA-Z0-9_-]+$'
 
-from google.oauth2 import service_account
-credentials = service_account.Credentials.from_service_account_file("produ-5d1cb-firebase-adminsdk-8hzdo-f44bea1278.json")
-db = firestore.client(credentials=credentials)
+cred = credentials.Certificate("C:/Users/Aram Jnad/Desktop/internship/Bu1ldbot/produ-5d1cb-firebase-adminsdk-8hzdo-f44bea1278.json")
+firebase_admin.initialize_app(cred)
+db = firestore.client()
 
 SLACK_CLIENT_ID = os.getenv("SLACK_CLIENTID")
 SLACK_CLIENT_SECRET = os.getenv("SLACK_CLIENT_SECRET")

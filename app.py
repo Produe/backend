@@ -15,9 +15,9 @@ SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
 SLACK_APP_TOKEN = os.getenv("SLACK_APP_TOKEN")
 TEAM_ENDPOINT = 'https://api.clickup.com/api/v2/team'
 
-from google.oauth2 import service_account
-credentials = service_account.Credentials.from_service_account_file("produ-5d1cb-firebase-adminsdk-8hzdo-f44bea1278.json")
-db = firestore.client(credentials=credentials)
+cred = credentials.Certificate("C:/Users/Aram Jnad/Desktop/internship/Bu1ldbot/produ-5d1cb-firebase-adminsdk-8hzdo-f44bea1278.json")
+firebase_admin.initialize_app(cred)
+db = firestore.client()
 
 def get_user_by_team_id(team_id):
     users_ref = db.collection('users')

@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 import os
 import re
 
+
 app = Flask(__name__)
 load_dotenv("TOKENS.env")
 valRegEx = r'^[a-zA-Z0-9_-]+$'

@@ -15,7 +15,7 @@ SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
 SLACK_APP_TOKEN = os.getenv("SLACK_APP_TOKEN")
 TEAM_ENDPOINT = 'https://api.clickup.com/api/v2/team'
 
-cred = credentials.Certificate("C:/Users/Aram Jnad/Desktop/internship/Bu1ldbot/produ-5d1cb-firebase-adminsdk-8hzdo-f44bea1278.json")
+cred = credentials.Certificate("produ-5d1cb-firebase-adminsdk-8hzdo-f44bea1278.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 

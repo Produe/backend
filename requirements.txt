@@ -20,3 +20,7 @@ python-dotenv==1.0.1
 
 # Regex for validations
 regex==2024.9.11
+
+asyncio==3.4.3
+
+Flask-Script==2.0.6

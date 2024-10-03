@@ -7,14 +7,18 @@ import datetime
 from dotenv import load_dotenv
 import os
 import re
+import asyncio
+import validate_services
 
 
 app = Flask(__name__)
 load_dotenv("TOKENS.env")
 valRegEx = r'^[a-zA-Z0-9_-]+$'
 
-cred = credentials.Certificate("produ-5d1cb-firebase-adminsdk-8hzdo-f44bea1278.json")
-firebase_admin.initialize_app(cred)
+if not firebase_admin._apps: ## EDITED
+    cred = credentials.Certificate("produ-5d1cb-firebase-adminsdk-8hzdo-f44bea1278.json") ## EDITED
+    firebase_admin.initialize_app(cred) ## EDITED
+
 db = firestore.client()
 
 SLACK_CLIENT_ID = os.getenv("SLACK_CLIENTID")
@@ -22,8 +26,6 @@ SLACK_CLIENT_SECRET = os.getenv("SLACK_CLIENT_SECRET")
 SLACK_REDIRECT_URI = 'https://extraordinary-nasturtium-9fc3f1.netlify.app/dashboard/'
 
 COLLECTION_NAME = 'users'
-
-
 
 @app.route('/auth', methods=['POST'])
 def auth():
@@ -133,42 +135,6 @@ def is_authenticated():
         abort(401)
 
 
-
-def validate_github_token(github_token):
-    headers = {
-        'Authorization': f'token {github_token}',
-        'Accept': 'application/vnd.github.v3+json'
-    }
-    response = requests.get('https://api.github.com/user', headers=headers)
-    return response.status_code == 200
-
-
-def validate_github_admin(github_admin, github_token):
-    headers = {
-        'Authorization': f'token {github_token}',
-        'Accept': 'application/vnd.github.v3+json'
-    }
-    response = requests.get(f'https://api.github.com/users/{github_admin}', headers=headers)
-    return response.status_code == 200
-
-
-def validate_github_repo(github_admin, github_repo, github_token):
-    headers = {
-        'Authorization': f'token {github_token}',
-        'Accept': 'application/vnd.github.v3+json'
-    }
-    response = requests.get(f'https://api.github.com/repos/{github_admin}/{github_repo}', headers=headers)
-    return response.status_code == 200
-
-
-def validate_clickup_token(clickup_token):
-    headers = {
-        'Authorization': clickup_token
-    }
-    response = requests.get('https://api.clickup.com/api/v2/user', headers=headers)
-    return response.status_code == 200
-
-
 @app.route('/update', methods=['POST'])
 def update_user_data():
     data = request.get_json()
@@ -272,12 +238,5 @@ def update_user_data():
                         "JIRA_STATUS": 1 if user_data.get("jira") != None else 0}), 200
 
 
-
-
-
-
-
 if __name__ == '__main__':
     app.run(debug=True)
-
-

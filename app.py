@@ -13,7 +13,7 @@ from flask_cors import CORS, cross_origin
 
  
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": "*", "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"], "allow_headers": ["Content-Type", "Authorization", "Session-ID"]}})
 
 load_dotenv("TOKENS.env")
 valRegEx = r'^[a-zA-Z0-9_-]+$'

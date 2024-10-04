@@ -24,3 +24,5 @@ regex==2024.9.11
 asyncio==3.4.3
 
 Flask-Script==2.0.6
+
+Flask-Cors==5.0.0

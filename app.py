@@ -11,7 +11,7 @@ import asyncio
 import validate_services
 from flask_cors import CORS, cross_origin
 
-
+ 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "https://extraordinary-nasturtium-9fc3f1.netlify.app/, 127.0.0.1"}})
 

@@ -9,25 +9,31 @@ import os
 import re
 import asyncio
 import validate_services
+from flask_cors import CORS, cross_origin
 
 
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "https://extraordinary-nasturtium-9fc3f1.netlify.app/, 127.0.0.1"}})
+
 load_dotenv("TOKENS.env")
 valRegEx = r'^[a-zA-Z0-9_-]+$'
 
-service_account_key = {
-    "type": os.getenv("FIREBASE_TYPE"),
-    "project_id": os.getenv("FIREBASE_PROJECT_ID"),
-    "private_key_id": os.getenv("FIREBASE_PRIVATE_KEY_ID"),
-    "private_key": os.getenv("FIREBASE_PRIVATE_KEY").replace("\\n", "\n"),
-    "client_email": os.getenv("FIREBASE_CLIENT_EMAIL"),
-    "client_id": os.getenv("FIREBASE_CLIENT_ID"),
-    "auth_uri": os.getenv("FIREBASE_AUTH_URI"),
-    "token_uri": os.getenv("FIREBASE_TOKEN_URI"),
-    "auth_provider_x509_cert_url": os.getenv("FIREBASE_AUTH_PROVIDER_X509_CERT_URL"),
-    "client_x509_cert_url": os.getenv("FIREBASE_CLIENT_X509_CERT_URL"),
-    "universe_domain": "googleapis.com"
-}
+if True:
+    service_account_key = {
+        "type": os.getenv("FIREBASE_TYPE"),
+        "project_id": os.getenv("FIREBASE_PROJECT_ID"),
+        "private_key_id": os.getenv("FIREBASE_PRIVATE_KEY_ID"),
+        "private_key": os.getenv("FIREBASE_PRIVATE_KEY").replace("\\n", "\n"),
+        "client_email": os.getenv("FIREBASE_CLIENT_EMAIL"),
+        "client_id": os.getenv("FIREBASE_CLIENT_ID"),
+        "auth_uri": os.getenv("FIREBASE_AUTH_URI"),
+        "token_uri": os.getenv("FIREBASE_TOKEN_URI"),
+        "auth_provider_x509_cert_url": os.getenv("FIREBASE_AUTH_PROVIDER_X509_CERT_URL"),
+        "client_x509_cert_url": os.getenv("FIREBASE_CLIENT_X509_CERT_URL"),
+        "universe_domain": "googleapis.com"
+    }
+else:
+    service_account_key = "produ-5d1cb-firebase-adminsdk-8hzdo-12c1025bab.json"
 
 if not firebase_admin._apps: ## EDITED
     cred = credentials.Certificate(service_account_key) ## EDITED
@@ -42,6 +48,7 @@ SLACK_REDIRECT_URI = 'https://extraordinary-nasturtium-9fc3f1.netlify.app/dashbo
 COLLECTION_NAME = 'users'
 
 @app.route('/auth', methods=['POST'])
+@cross_origin()
 def auth():
     data = request.json
     auth_code = data.get('AUTH_CODE')
@@ -136,6 +143,7 @@ def auth():
     abort(401)
 
 @app.route('/is_authenticated', methods=['POST'])
+@cross_origin()
 def is_authenticated():
     session_id = request.headers.get('Session-ID')
     if session_id:
@@ -150,6 +158,7 @@ def is_authenticated():
 
 
 @app.route('/update', methods=['POST'])
+@cross_origin()
 def update_user_data():
     data = request.get_json()
     session_id = request.headers.get('Session-ID')

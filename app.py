@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify,abort
+from flask import Flask, request, jsonify,abort, make_response
 import firebase_admin
 from firebase_admin import credentials, firestore
 import requests
@@ -13,9 +13,13 @@ from flask_cors import CORS, cross_origin
 
  
 app = Flask(__name__)
+app.config['CORS_HEADERS'] = 'Content-Type'
+
 CORS(app, resources={r"/*": {"origins": "*", "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"], "allow_headers": ["Content-Type", "Authorization", "Session-ID"]}})
 
-load_dotenv("TOKENS.env")
+
+
+load_dotenv(".env")
 valRegEx = r'^[a-zA-Z0-9_-]+$'
 
 if True:
@@ -28,8 +32,8 @@ if True:
         "client_id": os.getenv("FIREBASE_CLIENT_ID"),
         "auth_uri": os.getenv("FIREBASE_AUTH_URI"),
         "token_uri": os.getenv("FIREBASE_TOKEN_URI"),
-        "auth_provider_x509_cert_url": os.getenv("FIREBASE_AUTH_PROVIDER_X509_CERT_URL"),
-        "client_x509_cert_url": os.getenv("FIREBASE_CLIENT_X509_CERT_URL"),
+        "auth_provider_x509_cert_url": os.environ.get("FIREBASE_AUTH_PROVIDER_X509_CERT_URL"),
+        "client_x509_cert_url": os.environ.get("FIREBASE_CLIENT_X509_CERT_URL"),
         "universe_domain": "googleapis.com"
     }
 else:
@@ -113,6 +117,8 @@ def auth():
         })
         res=""
         res.headers['Session-ID'] = session_id
+        res.headers.add("Access-Control-Allow-Origin", "*") # CORS
+        res.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
         return res,200
 
 
@@ -142,15 +148,41 @@ def auth():
 
     abort(401)
 
+def print_all_sessions():
+    try:
+        # Retrieve all documents in the 'sessions' collection
+        sessions_ref = db.collection('sessions')
+        docs = sessions_ref.stream()
+
+        # Iterate over each document and print the data
+        for doc in docs:
+            print(f'Document ID: {doc.id}')
+            print(f'Data: {doc.to_dict()}')
+        
+        print("printing something")
+        print(db.collection('sessions').document("123123hellooo").get().to_dict())
+
+    except Exception as e:
+        print(f"Error retrieving sessions: {str(e)}")
+
+
 @app.route('/is_authenticated', methods=['POST'])
 @cross_origin()
 def is_authenticated():
     session_id = request.headers.get('Session-ID')
     if session_id:
+
         session_ref = db.collection('sessions').document(session_id).get()
+
+        print_all_sessions()
+        print("session id is")
+        print(session_id)
         
         if session_ref.exists:
-            return 200
+            response = make_response("Authenticated", 200)
+            response.headers['Access-Control-Allow-Origin'] = '*'
+
+            return response
         else:
             abort(401)
     else:
@@ -159,6 +191,7 @@ def is_authenticated():
 
 @app.route('/update', methods=['POST'])
 @cross_origin()
+
 def update_user_data():
     data = request.get_json()
     session_id = request.headers.get('Session-ID')
@@ -169,6 +202,7 @@ def update_user_data():
         abort(401)
     
     session_data = session_doc.to_dict()
+
     user_id = session_data.get('user_id')
     if not user_id:
         return jsonify({"request_state": 401}), 401
@@ -262,4 +296,4 @@ def update_user_data():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(port=5000)

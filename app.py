@@ -71,7 +71,7 @@ def auth():
         team_id = tokens.get('team', {}).get('id')
 
         if not access_token or not user_id or not team_id:
-            return jsonify({'request_state': 500})
+            abort(500)
         user_info_response = requests.get('https://slack.com/api/users.info', headers={
             'Authorization': f'Bearer {access_token}'
         }, params={'user': user_id})

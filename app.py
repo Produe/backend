@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify,abort
+from flask import Flask, request, jsonify,abort, make_response
 import firebase_admin
 from firebase_admin import credentials, firestore
 import requests
@@ -13,9 +13,13 @@ from flask_cors import CORS, cross_origin
 
  
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*", "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"], "allow_headers": ["Content-Type", "Authorization", "Session-ID"]}})
+app.config['CORS_HEADERS'] = 'Content-Type'
 
-load_dotenv("TOKENS.env")
+CORS(app)
+
+
+
+load_dotenv(".env")
 valRegEx = r'^[a-zA-Z0-9_-]+$'
 
 if True:
@@ -28,8 +32,8 @@ if True:
         "client_id": os.getenv("FIREBASE_CLIENT_ID"),
         "auth_uri": os.getenv("FIREBASE_AUTH_URI"),
         "token_uri": os.getenv("FIREBASE_TOKEN_URI"),
-        "auth_provider_x509_cert_url": os.getenv("FIREBASE_AUTH_PROVIDER_X509_CERT_URL"),
-        "client_x509_cert_url": os.getenv("FIREBASE_CLIENT_X509_CERT_URL"),
+        "auth_provider_x509_cert_url": os.environ.get("FIREBASE_AUTH_PROVIDER_X509_CERT_URL"),
+        "client_x509_cert_url": os.environ.get("FIREBASE_CLIENT_X509_CERT_URL"),
         "universe_domain": "googleapis.com"
     }
 else:
@@ -48,7 +52,7 @@ SLACK_REDIRECT_URI = 'https://extraordinary-nasturtium-9fc3f1.netlify.app/dashbo
 COLLECTION_NAME = 'users'
 
 @app.route('/auth', methods=['POST'])
-@cross_origin()
+#@cross_origin(origins=["https://extraordinary-nasturtium-9fc3f1.netlify.app"])
 def auth():
     data = request.json
     auth_code = data.get('AUTH_CODE')
@@ -57,21 +61,25 @@ def auth():
     if auth_code:
         response = requests.post('https://slack.com/api/oauth.v2.access', data={
             'code': auth_code,
-            'client_id': SLACK_CLIENT_ID,
-            'client_secret': SLACK_CLIENT_SECRET,
-            'redirect_uri': SLACK_REDIRECT_URI
+            'client_id': '7627984272181.7832128023202',
+            'client_secret': '7c69602c7188879c4404553c7a9c0d57',
+            'redirect_uri': 'https://extraordinary-nasturtium-9fc3f1.netlify.app/dashboard'
         })
+
+
 
         if response.status_code != 200:
             abort(500)
-
+            
         tokens = response.json()
+
         access_token = tokens.get('access_token')
         user_id = tokens.get('authed_user', {}).get('id')
         team_id = tokens.get('team', {}).get('id')
 
         if not access_token or not user_id or not team_id:
-            return jsonify({'request_state': 500})
+            abort(500)
+
         user_info_response = requests.get('https://slack.com/api/users.info', headers={
             'Authorization': f'Bearer {access_token}'
         }, params={'user': user_id})
@@ -83,16 +91,18 @@ def auth():
 
         if not user_info.get('ok'):
             abort(500)
+
         user = user_info['user']
         name = user.get('profile', {}).get('display_name')
-        name = name.split()[0]
+        if name != "": 
+            name = name.split()[0]
         users_ref = db.collection(COLLECTION_NAME).document(user_id)
         user_doc = users_ref.get()
 
         session_id = str(uuid.uuid4())
         creation_date = datetime.datetime.now(datetime.timezone.utc)
 
-        if not user_doc.exists():
+        if not user_doc.exists:
             users_ref.set({
                 'clickup_token': None,
                 'github_token': None,
@@ -111,15 +121,26 @@ def auth():
             'team_id': team_id,
             'created_at': creation_date
         })
-        res=""
+        res = make_response(jsonify({
+            'message': 'Success',
+            "USER_NAME": "HELLOWORLD",
+            "GITHUB_STATUS":0,
+            "GITLAB_STATUS":0,
+            "CLICKUP_STATUS":0,
+            "JIRA_STATUS":0 
+
+            }), 200)
         res.headers['Session-ID'] = session_id
-        return res,200
+        res.headers.add("Access-Control-Allow-Origin", "*") # CORS
+        res.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
+        return res ## ASK ABOUT THIS
+        #return res,200
 
 
     if session_id:
         doc_ref = db.collection('sessions').document(session_id)
         doc = doc_ref.get()
-        if doc.exists():
+        if doc.exists:
             session_data = doc.to_dict()
 
             user_id = session_data.get('user_id')
@@ -129,28 +150,82 @@ def auth():
             if user_doc.exists:
                 user_data = user_doc.to_dict()
                 session_data.update(user_data)
-                return jsonify({
-                "AUTH_CODE": auth_code,
-                "USER_NAME":user_data.get("name"),
-                "GITHUB_STATUS": 1 if user_data.get("github_token") != None else 0, 
-                "CLICKUP_STATUS": 1 if user_data.get("github_token") != None else 0, 
-                "GITLAB_STATUS":1 if user_data.get("gitlab")!= None else 0, 
-                "JIRA_STATUS": 1 if user_data.get("jira") != None else 0
-                })
+                res = make_response(jsonify({
+                'message': 'Success',
+                "USER_NAME": "HELLOWORLD",
+                "GITHUB_STATUS":0,
+                "GITLAB_STATUS":0,
+                "CLICKUP_STATUS":0,
+                "JIRA_STATUS":0 
+
+                }), 200)
+                res.headers['Session-ID'] = session_id
+                res.headers.add("Access-Control-Allow-Origin", "*") # CORS
+                res.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
+        
+                return res
+                #return jsonify({
+                #"AUTH_CODE": auth_code,
+                #"USER_NAME":user_data.get("name"),
+                #"GITHUB_STATUS": 1 if user_data.get("github_token") != None else 0, 
+                #"CLICKUP_STATUS": 1 if user_data.get("github_token") != None else 0, 
+                #"GITLAB_STATUS":1 if user_data.get("gitlab")!= None else 0, 
+                #"JIRA_STATUS": 1 if user_data.get("jira") != None else 0
+                #})
         else:
             abort(401)
 
     abort(401)
 
+def print_all_sessions():
+    try:
+        # Retrieve all documents in the 'sessions' collection
+        sessions_ref = db.collection('sessions')
+        docs = sessions_ref.stream()
+
+        # Iterate over each document and print the data
+        for doc in docs:
+            print(f'Document ID: {doc.id}')
+            print(f'Data: {doc.to_dict()}')
+        
+        print("printing something")
+        print(db.collection('sessions').document("123123hellooo").get().to_dict())
+
+    except Exception as e:
+        print(f"Error retrieving sessions: {str(e)}")
+
+
+def pretty_print_POST(req):
+    """
+    At this point it is completely built and ready
+    to be fired; it is "prepared".
+
+    However pay attention at the formatting used in 
+    this function because it is programmed to be pretty 
+    printed and may differ from the actual request.
+    """
+    print('{}\n{}\r\n{}\r\n\r\n{}'.format(
+        '-----------START-----------',
+        req.method + ' ' + req.url,
+        '\r\n'.join('{}: {}'.format(k, v) for k, v in req.headers.items()),
+        req.body,
+    ))
+
 @app.route('/is_authenticated', methods=['POST'])
-@cross_origin()
+#@cross_origin(origins=["https://extraordinary-nasturtium-9fc3f1.netlify.app"])
 def is_authenticated():
     session_id = request.headers.get('Session-ID')
+    print(request.headers)
     if session_id:
+        print("hihii")
+
         session_ref = db.collection('sessions').document(session_id).get()
         
         if session_ref.exists:
-            return 200
+            response = make_response("Authenticated", 200)
+            response.headers['Access-Control-Allow-Origin'] = '*'
+
+            return response
         else:
             abort(401)
     else:
@@ -158,17 +233,18 @@ def is_authenticated():
 
 
 @app.route('/update', methods=['POST'])
-@cross_origin()
+#@cross_origin(origins=["https://extraordinary-nasturtium-9fc3f1.netlify.app"])
 def update_user_data():
     data = request.get_json()
     session_id = request.headers.get('Session-ID')
     session_ref = db.collection('sessions').document(session_id)
     session_doc = session_ref.get()
 
-    if not session_doc.exists():
+    if not session_doc.exists:
         abort(401)
     
     session_data = session_doc.to_dict()
+
     user_id = session_data.get('user_id')
     if not user_id:
         return jsonify({"request_state": 401}), 401
@@ -177,7 +253,7 @@ def update_user_data():
     user_doc = user_ref.get()
 
 
-    if not user_doc.exists():
+    if not user_doc.exists:
         return jsonify({"request_state": 401}), 401
 
     updated_fields = {
@@ -262,4 +338,4 @@ def update_user_data():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(port=5000)

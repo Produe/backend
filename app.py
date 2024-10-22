@@ -237,7 +237,7 @@ def update_user_data():
     if not user_doc.exists():
         abort(401)
 
-    token_source = data.get("TOKEN_SOURCE")
+    token_source = data.get("SOURCE")
     authorization_code = data.get("AUTH_CODE")
 
     if token_source == "Github":

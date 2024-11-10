@@ -22,29 +22,6 @@ def auth():
     access_token = request.cookies.get("access_token")
     github_token = request.cookies.get("github_token")
     clickup_token = request.cookies.get("clickup_token")
-
-    if access_token:
-        user_info_response = requests.get('https://slack.com/api/users.info', headers={
-            'Authorization': f'Bearer {access_token}'
-        })
-
-        if user_info_response.status_code != 200:
-            abort(500)
-
-        user_info = user_info_response.json()
-
-        if not user_info.get('ok'):
-            abort(500)
-
-        user = user_info['user']
-        first_name = user.get('profile', {}).get('real_name', 'User').split()[0]
-
-        return jsonify({
-            "USER_NAME": first_name,
-            "GITHUB_STATUS": 1 if github_token else 0,
-            "CLICKUP_STATUS": 1 if clickup_token else 0,
-        })
-
     data = request.json
     auth_code = data.get('AUTH_CODE')
 
@@ -74,6 +51,29 @@ def auth():
         return res
 
     abort(401)
+
+    if access_token:
+        user_info_response = requests.get('https://slack.com/api/users.info', headers={
+            'Authorization': f'Bearer {access_token}'
+        })
+
+        if user_info_response.status_code != 200:
+            abort(500)
+
+        user_info = user_info_response.json()
+
+        if not user_info.get('ok'):
+            abort(500)
+
+        user = user_info['user']
+        first_name = user.get('profile', {}).get('real_name', 'User').split()[0]
+
+        return jsonify({
+            "USER_NAME": first_name,
+            "GITHUB_STATUS": 1 if github_token else 0,
+            "CLICKUP_STATUS": 1 if clickup_token else 0,
+        })
+
 
 
 @app.route('/is_authenticated', methods=['POST'])
@@ -162,6 +162,9 @@ def get_github_access_token(authorization_code):
     else:
         raise Exception(f"Failed to fetch access token: {response.text}")
 
+@app.route('/aa')
+def aa():
+    return 200
 
 if __name__ == '__main__':
     app.run()
